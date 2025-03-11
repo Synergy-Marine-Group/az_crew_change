@@ -40,5 +40,5 @@ class FetchCrewRep (BaseTool):
         hdrs = pd.DataFrame(cur.description)
         result = pd.DataFrame(sf_stmt)
         result.columns = hdrs['name']
-        result_dict =result.to_dict
-        return result_dict
+        result_json = result.to_json()
+        return result_json
