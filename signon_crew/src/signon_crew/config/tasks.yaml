@@ -1,0 +1,70 @@
+---
+vessel_find:
+  description: >
+        """ Find the latest position of the vessel by passing {imo} from user to MyCustomTool , analyze the result and provide summary
+        Next Port details can be found at field 'NEXT_PORT_UNLOCODE' 
+        Please describe the type of vessel where she is saling from , the exaxt lat lon and speed at which she is travelling  , distance to go
+         """
+  expected_output: >
+         """  Current location of vessel , port that will be visited next and ETA to the port all concisely explained
+          Please describe the type of vessel where she is saling from , the exaxt lat lon and speed at which she is travelling  , distance to go
+          Accurate ETAs and a list of suitable crew change ports based on current vessel positions.
+          """
+  agent: vessl_pos_agent
+crew_onboard_task:
+    description: >
+      """  Query and analyze crew contract data from AHOY to identify crew members whose contracts are nearing completion and update their availability status 
+         use the tooll FetchCrewOnboard using {imo} to calculate ETAs for crew change ports and evaluate port suitability.
+         The crew members who have contracts expring with 15 days of the ships next port call [ If not available use conrtacts ending before Apr 1 2025] 
+           are to be replaced - please exclude all other members 
+      """
+    expected_output: >
+     """ 
+        Updated crew contract statuses with identification of members approaching contract end and show status for all crews.
+        All members whose contracts are expiring are to be passed on to the crew_replace_agent
+        """
+    context : [vessel_find]
+    agent: crew_on_agent
+find_replacement_task:
+    description: >
+      """  
+         once you get the out from FetchCrewRep() tool  
+         If there are many seafarers who need to be replaced restrict your analysis to only 3/4 that are expiring the soonest
+         Analyze crew data from crew_on_agent to pickup members for whom a replacement is to be found  
+         For each of the crew that needs to be replaced find their rank_name_se and pass it as paramater  to the FetchCrewRep tool   
+      """
+    expected_output: >
+      """ 
+        Top 3 Replacments for each of the crew whose contracts are expiring 
+        Ensure replacement are of the same rank (identified by rank_name_se) , in your output of replacement share replacement seafarer name , crew_code , 
+        agent name and any other detail you have that may be useful
+        """
+    context : [vessel_find,crew_onboard_task]
+    agent: crew_replace_agent
+
+summary_task:
+    description: >
+     """ Combine the information retrieved by both agents and create a summary report. This includes cross-verifying data points and preparing a cohesive document. """
+    expected_output: >
+     """ A comprehensive summary report containing both generic and specific details about the findings of all agents.
+                Output format 
+                1. From vessel_find task i.e. vessl_pos_agent
+                    Name of the vessel:
+                    Current Port:
+                    Destination Port:
+                    Expected Time of Arrival:
+                    Summary :
+
+                2. From crew_onboard_task task i.e. crew_on_agent List of Crew that needs be replaced [ each seafarer is one row]
+                   format for each seafarer 
+                   1.  Name :   Crew code :  Rank :  Nationality : Contract end date :   vessel_category_name:
+                   2.  Name :   Crew code :  Rank :  Nationality : Contract end date : vessel_category_name :
+
+                3. From find_replacement_task task i.e. crew_replace_agent  : Top 3 replacments for each seafarer 
+                    Name of Seafarer onboard 1 : [ Rank , Crew Id]
+                        Replacement option 1: Name :   Crew code :  Rank :  Nationality : Contract end date : vessel_category_name :
+                        Replacement option 2: Name :   Crew code :  Rank :  Nationality : Contract end date : vessel_category_name :
+                        Replacement option 3: Name :   Crew code :  Rank :  Nationality : Contract end date : vessel_category_name :
+        """
+    context : [vessel_find,crew_onboard_task,find_replacement_task]
+    agent: Summarizer_agent

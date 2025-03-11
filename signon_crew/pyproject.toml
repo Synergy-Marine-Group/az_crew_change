@@ -1,0 +1,24 @@
+[project]
+name = "signon_crew"
+version = "0.1.0"
+description = "signon_crew using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "crewai[tools]==0.105.0",
+    "snowflake>=1.0.5",
+]
+
+[project.scripts]
+signon_crew = "signon_crew.main:run"
+run_crew = "signon_crew.main:run"
+train = "signon_crew.main:train"
+replay = "signon_crew.main:replay"
+test = "signon_crew.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
