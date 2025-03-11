@@ -23,7 +23,7 @@ class FetchCrewRep (BaseTool):
             )
             return con
         
-            stmt = f""" select first_name , last_name , crew_code , nationality_name ,rank_name_se ,country ,  
+        stmt = f""" select first_name , last_name , crew_code , nationality_name ,rank_name_se ,country ,  
                         vessel_category_name ,availability_date,AGENT_NAME,RECRUITMENT_COMPANY,LAST_DOC_CONTRACT_COMPANY
                         from open_analytics_zone.ks_scratchpad.crew_full_df
                         where current_status ='Sign Off'
