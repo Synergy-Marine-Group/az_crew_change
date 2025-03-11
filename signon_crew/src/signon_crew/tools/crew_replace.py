@@ -23,15 +23,16 @@ class FetchCrewRep (BaseTool):
             )
             return con
         
-        stmt = f""" select first_name , last_name , crew_code , nationality_name ,rank_name_se ,country ,  
-                        vessel_category_name ,
-                       rank_category , rank_level
+            stmt = f""" select first_name , last_name , crew_code , nationality_name ,rank_name_se ,country ,  
+                        vessel_category_name ,availability_date,AGENT_NAME,RECRUITMENT_COMPANY,LAST_DOC_CONTRACT_COMPANY
                         from open_analytics_zone.ks_scratchpad.crew_full_df
                         where current_status ='Sign Off'
                         and profile_status ='Active Seafarer'
                         and availability_date < current_date +7
                         and sign_off_reason ='End of Contract'
-                        and rank_name_se ='{role}';
+                        and rank_name_se ='{role}'
+                        LIMIT  50
+                        ;
                         """
 
         sf_con = snowflake_conn()
